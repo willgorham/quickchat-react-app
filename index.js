@@ -1,13 +1,7 @@
-const DUMMY_DATA = [
-  {
-    senderId: "perborgen",
-    text: "who'll win?"
-  },
-  {
-    senderId: "janedoe",
-    text: "Brazil!"
-  }
-]
+const instanceLocator = 'v1:us1:45cb8e6b-b38e-45ac-9cc6-fe90df67d1cc';
+const testToken = 'https://us1.pusherplatform.io/services/chatkit_token_provider/v1/45cb8e6b-b38e-45ac-9cc6-fe90df67d1cc/token';
+const username = 'willgorham';
+const roomId = 16256134;
 
 class App extends React.Component {
 
@@ -15,8 +9,32 @@ class App extends React.Component {
     super();
 
     this.state = {
-      messages: DUMMY_DATA
+      messages: []
     }
+  }
+
+  componentDidMount() {
+    const chatManager = new Chatkit.ChatManager({
+      instanceLocator: instanceLocator,
+      userId: username,
+      tokenProvider: new Chatkit.TokenProvider({
+        url: testToken
+      })
+    })
+
+    chatManager.connect().then(currentUser => {
+      this.currentUser = currentUser;
+      currentUser.subscribeToRoom({
+        roomId: roomId,
+        hooks: {
+          onNewMessage: message => {
+            this.setState({
+              messages: [...this.state.messages, message]
+            })
+          }
+        }
+      })
+    })
   }
 
   render() {
