@@ -10,7 +10,8 @@ class App extends React.Component {
 
     this.state = {
       messages: []
-    }
+    };
+    this.sendMessage = this.sendMessage.bind(this);
   }
 
   componentDidMount() {
@@ -20,7 +21,7 @@ class App extends React.Component {
       tokenProvider: new Chatkit.TokenProvider({
         url: testToken
       })
-    })
+    });
 
     chatManager.connect().then(currentUser => {
       this.currentUser = currentUser;
@@ -30,11 +31,18 @@ class App extends React.Component {
           onNewMessage: message => {
             this.setState({
               messages: [...this.state.messages, message]
-            })
+            });
           }
         }
-      })
-    })
+      });
+    });
+  }
+
+  sendMessage(text) {
+    this.currentUser.sendMessage({
+      text,
+      roomId: roomId
+    });
   }
 
   render() {
@@ -42,16 +50,15 @@ class App extends React.Component {
       <div className="app">
         <Title />
         <MessageList messages={this.state.messages} />
-        <SendMessageForm />
+        <SendMessageForm sendMessage={this.sendMessage} />
       </div>
-    )
+    );
   }
 
 }
 
-class Title extends React.Component {
-
-  render() { return null; }
+function Title() {
+  return <p className="title">A Quick Chat App</p>;
 }
 
 
@@ -70,16 +77,53 @@ class MessageList extends React.Component {
                 {message.text}
               </div>
             </li>
-          )
+          );
         })}
       </ul>
-    )
+    );
   }
 }
 
 class SendMessageForm extends React.Component {
 
-  render() { return null; }
+  constructor() {
+    super();
+    this.state = {
+      message: ''
+    };
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(e) {
+    this.setState({
+      message: e.target.value
+    });
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+    this.props.sendMessage(this.state.message);
+    this.setState({
+      message: ''
+    });
+  }
+
+  render() {
+    return(
+      <form
+        className="send-message-form"
+        onSubmit={this.handleSubmit}>
+        <input
+          type="text"
+          placehlder="Type your message and press ENTER"
+          value={this.state.message}
+          onChange={this.handleChange}
+           />
+          }
+      </form>
+    );
+  }
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
